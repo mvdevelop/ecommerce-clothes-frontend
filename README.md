@@ -1,70 +1,73 @@
-# Getting Started with Create React App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## 👕 E-Commerce Clothes Frontend
+Uma plataforma de e-commerce de moda elegante e moderna, projetada para oferecer uma experiência de compra fluida. A aplicação foca em uma interface visualmente limpa, com navegação intuitiva e total responsividade para que os usuários possam renovar o guarda-roupa em qualquer dispositivo.
 
-## Available Scripts
+## 🚀 Funcionalidades
+Catálogo de Produtos: Exibição dinâmica de roupas com filtros por categoria e preço.
 
-In the project directory, you can run:
+Carrinho de Compras Interativo: Adicione, remova e gerencie a quantidade de itens com cálculo em tempo real.
 
-### `npm start`
+Visualização Detalhada: Páginas exclusivas para cada produto com especificações e imagens.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Checkout Simulado: Fluxo intuitivo para finalização de pedido.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Design Premium: Interface construída com foco em UX/UI, utilizando os princípios de design moderno.
 
-### `npm test`
+Totalmente Responsivo: Experiência otimizada para mobile, tablet e desktop via TailwindCSS.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## 🛠️ Tecnologias Utilizadas
+React (Create React App): Biblioteca principal para construção da interface baseada em componentes.
 
-### `npm run build`
+TailwindCSS: Framework CSS utilitário para estilização rápida e design responsivo.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+React Router Dom: Gerenciamento de rotas e navegação entre páginas.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Lucide React / Heroicons: Conjunto de ícones minimalistas e modernos.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Context API: Gerenciamento de estado global para o carrinho de compras.
 
-### `npm run eject`
+## 📦 Como rodar o projeto
+Clone o repositório:
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+Bash
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+git clone https://github.com/mvdevelop/ecommerce-clothes-frontend.git
+cd ecommerce-clothes-frontend
+Instale as dependências:
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+Bash
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+npm install
+Configure a API (Opcional): Caso o projeto consuma o seu backend, certifique-se de que ele está rodando ou configure a URL base no arquivo de serviços/configuração.
 
-## Learn More
+Inicie a aplicação:
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Bash
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+npm start
+Acesse: http://localhost:3000
 
-### Code Splitting
+## 📂 Estrutura de Pastas
+Plaintext
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+ecommerce-clothes-frontend/
+├── public/           # Arquivos estáticos e index.html
+├── src/
+│   ├── assets/       # Imagens dos produtos e banners
+│   ├── components/   # Componentes reutilizáveis (Navbar, Footer, Card)
+│   ├── context/      # Gerenciamento de estado (CartContext)
+│   ├── pages/        # Telas principais (Home, Cart, ProductDetails)
+│   ├── styles/       # Configurações globais de CSS
+│   └── App.js        # Configuração de rotas e estrutura raiz
+└── tailwind.config.js # Customizações do Tailwind
 
-### Analyzing the Bundle Size
+## 🎨 Preview da Interface
+Nota: Adicione aqui um screenshot do projeto ou descreva o estilo visual (ex: Estilo minimalista, paleta de cores neutras e tipografia moderna).
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## 👨‍💻 Autor
+Desenvolvido com ❤️ por mvdevelop.
 
-### Making a Progressive Web App
+GitHub: @mvdevelop
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## 📄 Licença
+Este projeto está sob a licença MIT.
