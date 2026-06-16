@@ -42,9 +42,11 @@ function ShopCategory(props: ShopCategoryProps) {
                 key={i}
                 id={item.id}
                 name={item.name}
-                image={item.image}
-                new_price={item.new_price}
-                old_price={item.old_price}
+                image={item.images?.[0] || ''}
+                basePrice={item.basePrice}
+                salePrice={item.salePrice}
+                tags={item.tags}
+                variants={item.variants}
               />
             );
           }

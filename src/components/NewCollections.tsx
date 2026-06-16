@@ -1,15 +1,27 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import Item from './Item';
-import { Product } from '../types';
+
+interface ApiProduct {
+  id: number;
+  name: string;
+  image: string;
+  basePrice?: number;
+  salePrice?: number;
+  new_price?: number;
+  old_price?: number;
+  variants?: { colorHex: string }[];
+  tags?: string[];
+  images?: string[];
+}
 
 function NewCollections() {
-  const [new_collecion, setNew_collection] = useState<Product[]>([]);
+  const [newCollection, setNewCollection] = useState<ApiProduct[]>([]);
 
   useEffect(() => {
     fetch('http://localhost:4000/newcollections')
       .then((response) => response.json())
-      .then((data) => setNew_collection(data));
+      .then((data) => setNewCollection(data));
   }, []);
 
   return (
@@ -36,14 +48,16 @@ function NewCollections() {
           mass: 1,
         }}
       >
-        {new_collecion.map((item) => (
+        {newCollection.map((item) => (
           <Item
             key={item.id}
             id={item.id}
             name={item.name}
-            image={item.image}
-            new_price={item.new_price}
-            old_price={item.old_price}
+            image={item.image || item.images?.[0] || ''}
+            basePrice={item.basePrice ?? item.new_price}
+            salePrice={item.salePrice ?? item.old_price}
+            tags={item.tags}
+            variants={item.variants}
           />
         ))}
       </motion.div>

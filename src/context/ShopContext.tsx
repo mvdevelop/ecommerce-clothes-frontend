@@ -1,18 +1,17 @@
 import { createContext, useEffect, ReactNode } from 'react';
-import { ShopContextType } from '../types';
+import { ShopContextType, Product } from '../types';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import {
   addToCart as reduxAddToCart,
   removeFromCart as reduxRemoveFromCart,
-  setCart,
-  selectCartItems,
-  selectTotalAmount,
+  clearCart,
   selectTotalItems,
+  selectSubtotal,
+  selectCartItems,
+  CartItemState,
 } from '../store/slices/cartSlice';
 import { fetchAllProducts, selectAllProducts } from '../store/slices/productsSlice';
 import { selectAuthToken } from '../store/slices/authSlice';
-
-const url = 'http://localhost:4000';
 
 export const ShopContext = createContext<ShopContextType | null>(null);
 
@@ -23,73 +22,51 @@ interface ShopContextProviderProps {
 const ShopContextProvider = (props: ShopContextProviderProps) => {
   const dispatch = useAppDispatch();
   const all_product = useAppSelector(selectAllProducts);
-  const cartItems = useAppSelector(selectCartItems);
-  const totalAmount = useAppSelector(selectTotalAmount);
+  const cartItemList = useAppSelector(selectCartItems);
   const totalItems = useAppSelector(selectTotalItems);
+  const subtotal = useAppSelector(selectSubtotal);
   const token = useAppSelector(selectAuthToken);
+
+  // Legacy cartItems format: { [productId]: quantity }
+  const cartItems: { [key: number]: number } = {};
+  cartItemList.forEach((item: CartItemState) => {
+    cartItems[item.productId] = (cartItems[item.productId] || 0) + item.quantity;
+  });
 
   useEffect(() => {
     dispatch(fetchAllProducts());
+  }, [dispatch]);
 
-    if (token) {
-      fetch(`${url}/getcart`, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/form-data',
-          'auth-token': token,
-          'Content-Type': 'application/json',
-        },
-        body: '',
-      })
-        .then((response: Response) => response.json())
-        .then((data) => dispatch(setCart(data)));
-    }
-  }, [dispatch, token]);
-
-  const addToCart = (itemId: number): void => {
-    dispatch(reduxAddToCart(itemId));
-    if (token) {
-      fetch(`${url}/addtocart`, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/form-data',
-          'auth-token': token,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ itemId }),
-      })
-        .then((response: Response) => response.json())
-        .then((data: unknown) => console.log(data));
+  const addToCartFn = (itemId: number): void => {
+    const product = all_product.find((p: Product) => p.id === itemId);
+    if (product) {
+      const size = product.variants?.[0]?.size || 'M';
+      const color = product.variants?.[0]?.color || 'Default';
+      const price = product.salePrice ?? product.basePrice;
+      dispatch(
+        reduxAddToCart({
+          productId: itemId,
+          name: product.name,
+          image: product.images?.[0] || '',
+          size,
+          color,
+          price,
+        })
+      );
     }
   };
 
-  const removeFromCart = (itemId: number): void => {
-    dispatch(reduxRemoveFromCart(itemId));
-    if (token) {
-      fetch(`${url}/removefromcart`, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/form-data',
-          'auth-token': token,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ itemId }),
-      })
-        .then((response: Response) => response.json())
-        .then((data: unknown) => console.log(data));
-    }
+  const removeFromCartFn = (itemId: number): void => {
+    dispatch(reduxRemoveFromCart({ productId: itemId, size: '', color: '' }));
   };
-
-  const getTotalCartAmount = (): number => totalAmount;
-  const getTotalCartItems = (): number => totalItems;
 
   const contextValue: ShopContextType = {
     all_product,
     cartItems,
-    addToCart,
-    removeFromCart,
-    getTotalCartAmount,
-    getTotalCartItems,
+    addToCart: addToCartFn,
+    removeFromCart: removeFromCartFn,
+    getTotalCartAmount: () => subtotal,
+    getTotalCartItems: () => totalItems,
   };
 
   return (

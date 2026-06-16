@@ -25,6 +25,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "mock-server": "node server.js",
+    "generate-db": "node scripts/generate-db.mjs",
     "dev": "concurrently \"npm run mock-server\" \"npm start\""
   },
   "eslintConfig": {

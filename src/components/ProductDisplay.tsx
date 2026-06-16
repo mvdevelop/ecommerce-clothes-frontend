@@ -1,9 +1,9 @@
-import { useContext } from 'react';
+import { useState, useContext } from 'react';
 import { ShopContext } from '../context/ShopContext';
 import { Product } from '../types';
+import { ProductVariants } from './ProductVariants';
 import { showSuccess } from '../services/toastService';
-import star_icon from '../assets/star_icon.png';
-import star_dull_icon from '../assets/star_dull_icon.png';
+import { Star } from 'lucide-react';
 
 interface ProductDisplayProps {
   product: Product;
@@ -12,94 +12,126 @@ interface ProductDisplayProps {
 function ProductDisplay(props: ProductDisplayProps) {
   const { product } = props;
   const { addToCart } = useContext(ShopContext)!;
+  const [selectedImage, setSelectedImage] = useState(0);
+  const [selectedSize, setSelectedSize] = useState(
+    product.variants[0]?.size || ''
+  );
+  const [selectedColor, setSelectedColor] = useState(
+    product.variants[0]?.color || ''
+  );
+
+  const images = product.images?.length > 0 ? product.images : [product.images?.[0] || ''];
+  const displayPrice = product.salePrice ?? product.basePrice;
+  const hasSale = !!product.salePrice;
 
   const handleAddToCart = () => {
+    if (!selectedSize || !selectedColor) return;
     addToCart(product.id);
-    showSuccess(`${product.name} adicionado ao carrinho!`);
+    showSuccess(`${product.name} (${selectedSize}, ${selectedColor}) adicionado!`);
   };
 
   return (
     <div className="px-6 md:px-16 lg:px-24 xl:px-32 py-8">
-      <div className="flex flex-col md:flex-row gap-10">
-        {/* Left - Image Gallery */}
-        <div className="flex gap-4">
-          <div className="flex flex-col gap-3">
-            {[1, 2, 3, 4].map((i) => (
-              <img
+      <div className="flex flex-col md:flex-row gap-8 lg:gap-16">
+        {/* Left - Gallery */}
+        <div className="flex flex-col md:flex-row gap-4">
+          {/* Thumbnails */}
+          <div className="flex md:flex-col gap-3 order-2 md:order-1">
+            {images.map((img, i) => (
+              <button
                 key={i}
-                src={product.image}
-                alt=""
-                className="w-16 h-16 object-cover rounded-lg border border-slate-800 cursor-pointer hover:border-pink-500 transition"
-              />
+                onClick={() => setSelectedImage(i)}
+                className={`w-16 h-20 flex-shrink-0 rounded-lg overflow-hidden border-2 transition ${
+                  i === selectedImage ? 'border-pink-500' : 'border-slate-800 hover:border-slate-600'
+                }`}
+              >
+                <img src={img} alt="" className="w-full h-full object-cover" />
+              </button>
             ))}
           </div>
-          <div className="w-96 h-96 bg-slate-900 rounded-xl overflow-hidden border border-slate-800">
+          {/* Main Image */}
+          <div className="w-full md:w-96 lg:w-[450px] aspect-[3/4] bg-slate-900 rounded-xl overflow-hidden border border-slate-800 order-1 md:order-2">
             <img
-              src={product.image}
+              src={images[selectedImage]}
               alt={product.name}
               className="w-full h-full object-cover"
             />
           </div>
         </div>
 
-        {/* Right - Product Info */}
+        {/* Right - Info */}
         <div className="flex-1 max-w-xl">
           <h1 className="text-2xl md:text-3xl font-semibold text-white">
             {product.name}
           </h1>
-          {/* Stars */}
-          <div className="flex items-center gap-1 mt-3">
-            <img src={star_icon} alt="" className="size-5" />
-            <img src={star_icon} alt="" className="size-5" />
-            <img src={star_icon} alt="" className="size-5" />
-            <img src={star_icon} alt="" className="size-5" />
-            <img src={star_dull_icon} alt="" className="size-5" />
-            <span className="text-slate-500 text-sm ml-2">(122)</span>
+
+          {/* Rating */}
+          <div className="flex items-center gap-2 mt-3">
+            <div className="flex items-center gap-0.5">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star
+                  key={i}
+                  size={16}
+                  className={i < Math.round(product.rating || 0) ? 'fill-pink-500 text-pink-500' : 'text-slate-600'}
+                />
+              ))}
+            </div>
+            <span className="text-slate-500 text-sm">
+              ({product.reviewsCount || 0})
+            </span>
           </div>
+
           {/* Prices */}
           <div className="flex items-center gap-4 mt-6">
             <span className="text-3xl font-bold text-pink-500">
-              ${product.new_price}
+              ${displayPrice.toFixed(2)}
             </span>
-            <span className="text-xl text-slate-600 line-through">
-              ${product.old_price}
-            </span>
+            {hasSale && (
+              <span className="text-xl text-slate-600 line-through">
+                ${product.basePrice.toFixed(2)}
+              </span>
+            )}
           </div>
+
           {/* Description */}
-          <p className="text-slate-400 mt-4 leading-relaxed">
-            Elevate your style with our piece, featuring a modern color
-            combination.
+          <p className="text-slate-400 mt-4 leading-relaxed text-sm">
+            {product.description || 'Premium quality product crafted for maximum comfort and style.'}
           </p>
-          {/* Size Selector */}
-          <div className="mt-6">
-            <h3 className="text-white font-medium mb-3">Select Size</h3>
-            <div className="flex gap-3">
-              {['S', 'M', 'L', 'XL', 'XXL'].map((size) => (
-                <div
-                  key={size}
-                  className="w-12 h-12 flex items-center justify-center rounded-lg bg-slate-900 border border-slate-700 text-white cursor-pointer hover:border-pink-500 transition font-medium"
-                >
-                  {size}
-                </div>
-              ))}
+
+          {/* Variants */}
+          {product.variants && product.variants.length > 0 && (
+            <div className="mt-6">
+              <ProductVariants
+                variants={product.variants}
+                selectedSize={selectedSize}
+                selectedColor={selectedColor}
+                onSizeChange={setSelectedSize}
+                onColorChange={setSelectedColor}
+              />
             </div>
-          </div>
+          )}
+
           {/* Add to Cart */}
           <button
             onClick={handleAddToCart}
-            className="mt-8 w-full py-3 bg-pink-600 hover:bg-pink-700 active:scale-[0.98] transition-all rounded-full text-white font-medium"
+            disabled={!selectedSize || !selectedColor}
+            className="mt-8 w-full py-3.5 bg-pink-600 hover:bg-pink-700 disabled:bg-slate-800 disabled:text-slate-500 active:scale-[0.98] transition-all rounded-full text-white font-medium"
           >
             ADD TO CART
           </button>
+
           {/* Category / Tags */}
           <div className="mt-6 space-y-2 text-sm text-slate-500">
             <p>
-              <span className="text-slate-400">Category :</span> Women,
-              T-Shirt, Crop Top
+              <span className="text-slate-400">Category :</span>{' '}
+              {product.subcategory || product.category}
             </p>
-            <p>
-              <span className="text-slate-400">Tags :</span> Modern, Latest
-            </p>
+            {product.tags && product.tags.length > 0 && (
+              <p>
+                <span className="text-slate-400">Tags :</span>{' '}
+                {product.tags.map((t) => t.charAt(0).toUpperCase() + t.slice(1)).join(', ')}
+              </p>
+            )}
           </div>
         </div>
       </div>

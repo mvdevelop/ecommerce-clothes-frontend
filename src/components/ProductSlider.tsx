@@ -51,9 +51,11 @@ function ProductSlider({ items, title }: ProductSliderProps) {
             <Item
               id={product.id}
               name={product.name}
-              image={product.image}
-              new_price={product.new_price}
-              old_price={product.old_price}
+              image={product.images?.[0] || ''}
+              basePrice={product.basePrice}
+              salePrice={product.salePrice}
+              tags={product.tags}
+              variants={product.variants}
             />
           </SwiperSlide>
         ))}

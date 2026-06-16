@@ -36,21 +36,21 @@ function CartItems() {
               {/* Product Info */}
               <div className="flex items-center gap-4">
                 <img
-                  src={e.image}
+                  src={(e.images?.[0] || '')}
                   alt={e.name}
                   className="w-20 h-20 object-cover rounded-lg bg-slate-900"
                 />
                 <p className="text-white text-sm line-clamp-2">{e.name}</p>
               </div>
               {/* Price */}
-              <p className="text-pink-500 font-medium">${e.new_price}</p>
+              <p className="text-pink-500 font-medium">${(e.salePrice ?? e.basePrice)}</p>
               {/* Quantity */}
               <button className="w-10 h-10 rounded-lg bg-slate-900 border border-slate-700 text-white font-medium">
                 {cartItems[e.id]}
               </button>
               {/* Total */}
               <p className="text-white font-medium">
-                ${(e.new_price * cartItems[e.id]).toFixed(2)}
+                ${((e.salePrice ?? e.basePrice) * cartItems[e.id]).toFixed(2)}
               </p>
               {/* Remove */}
               <button onClick={() => handleRemove(e.id, e.name)}>
