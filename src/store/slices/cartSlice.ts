@@ -1,64 +1,133 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import type { CartItems } from '../../types';
+
+export interface CartItemState {
+  productId: number;
+  name: string;
+  image: string;
+  size: string;
+  color: string;
+  price: number;
+  quantity: number;
+}
 
 interface CartState {
-  items: CartItems;
+  items: CartItemState[];
+  coupon: { code: string; discount: number } | null;
+  shipping: number;
 }
 
 const initialState: CartState = {
-  items: {},
+  items: [],
+  coupon: null,
+  shipping: 0,
 };
 
 const cartSlice = createSlice({
   name: 'cart',
   initialState,
   reducers: {
-    addToCart(state, action: PayloadAction<number>) {
-      const id = action.payload;
-      state.items[id] = (state.items[id] || 0) + 1;
+    addToCart(
+      state,
+      action: PayloadAction<{
+        productId: number;
+        name: string;
+        image: string;
+        size: string;
+        color: string;
+        price: number;
+      }>
+    ) {
+      const { productId, size, color } = action.payload;
+      const existing = state.items.find(
+        (i) => i.productId === productId && i.size === size && i.color === color
+      );
+      if (existing) {
+        existing.quantity += 1;
+      } else {
+        state.items.push({ ...action.payload, quantity: 1 });
+      }
     },
-    removeFromCart(state, action: PayloadAction<number>) {
-      const id = action.payload;
-      if (state.items[id] > 0) {
-        state.items[id]--;
+    removeFromCart(
+      state,
+      action: PayloadAction<{ productId: number; size: string; color: string }>
+    ) {
+      const { productId, size, color } = action.payload;
+      state.items = state.items.filter(
+        (i) => !(i.productId === productId && i.size === size && i.color === color)
+      );
+    },
+    updateQuantity(
+      state,
+      action: PayloadAction<{
+        productId: number;
+        size: string;
+        color: string;
+        quantity: number;
+      }>
+    ) {
+      const { productId, size, color, quantity } = action.payload;
+      const item = state.items.find(
+        (i) => i.productId === productId && i.size === size && i.color === color
+      );
+      if (item && quantity > 0) {
+        item.quantity = quantity;
       }
     },
     clearCart(state) {
-      state.items = {};
+      state.items = [];
+      state.coupon = null;
+      state.shipping = 0;
     },
-    setCart(state, action: PayloadAction<CartItems>) {
+    setCart(state, action: PayloadAction<CartItemState[]>) {
       state.items = action.payload;
+    },
+    applyCoupon(
+      state,
+      action: PayloadAction<{ code: string; discount: number }>
+    ) {
+      state.coupon = action.payload;
+    },
+    removeCoupon(state) {
+      state.coupon = null;
+    },
+    setShipping(state, action: PayloadAction<number>) {
+      state.shipping = action.payload;
     },
   },
 });
 
-export const { addToCart, removeFromCart, clearCart, setCart } =
-  cartSlice.actions;
+export const {
+  addToCart,
+  removeFromCart,
+  updateQuantity,
+  clearCart,
+  setCart,
+  applyCoupon,
+  removeCoupon,
+  setShipping,
+} = cartSlice.actions;
 
 export const selectCartItems = (state: { cart: CartState }) => state.cart.items;
+export const selectCartCoupon = (state: { cart: CartState }) => state.cart.coupon;
+export const selectShipping = (state: { cart: CartState }) => state.cart.shipping;
 
-export const selectTotalAmount = (state: { cart: CartState; products: { allProducts: { id: number; new_price: number }[] } }) => {
-  let total = 0;
-  for (const idStr in state.cart.items) {
-    const id = Number(idStr);
-    const qty = state.cart.items[id];
-    if (qty > 0) {
-      const product = state.products.allProducts.find((p) => p.id === id);
-      if (product) {
-        total += product.new_price * qty;
-      }
-    }
-  }
-  return total;
+export const selectSubtotal = (state: { cart: CartState }) =>
+  state.cart.items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+
+export const selectDiscount = (state: { cart: CartState }) => {
+  if (!state.cart.coupon) return 0;
+  const subtotal = selectSubtotal(state);
+  return state.cart.coupon.discount;
 };
 
-export const selectTotalItems = (state: { cart: CartState }) => {
-  let total = 0;
-  for (const idStr in state.cart.items) {
-    const qty = state.cart.items[idStr];
-    if (qty > 0) total += qty;
-  }
-  return total;
+export const selectTotal = (state: { cart: CartState }) => {
+  const subtotal = selectSubtotal(state);
+  const discount = selectDiscount(state);
+  const shipping = state.cart.shipping;
+  return Math.max(0, subtotal - discount + shipping);
 };
+
+export const selectTotalItems = (state: { cart: CartState }) =>
+  state.cart.items.reduce((sum, i) => sum + i.quantity, 0);
 
 export default cartSlice.reducer;

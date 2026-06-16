@@ -1,15 +1,20 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import type { AuthResponse } from '../../types';
 
 const url = 'http://localhost:4000';
 
 interface AuthState {
   token: string | null;
+  user: { name: string; email: string } | null;
   loading: boolean;
 }
 
+const storedToken = localStorage.getItem('auth-token');
+const storedUser = localStorage.getItem('auth-user');
+
 const initialState: AuthState = {
-  token: localStorage.getItem('auth-token'),
+  token: storedToken,
+  user: storedUser ? JSON.parse(storedUser) : null,
   loading: false,
 };
 
@@ -24,35 +29,35 @@ interface SignupPayload {
   password: string;
 }
 
-export const loginUser = createAsyncThunk<
-  AuthResponse,
-  LoginPayload
->('auth/login', async ({ email, password }) => {
-  const res = await fetch(`${url}/login`, {
-    method: 'POST',
-    headers: {
-      Accept: 'application/form-data',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ email, password }),
-  });
-  return res.json();
-});
+export const loginUser = createAsyncThunk<AuthResponse, LoginPayload>(
+  'auth/login',
+  async ({ email, password }) => {
+    const res = await fetch(`${url}/login`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/form-data',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+    });
+    return res.json();
+  }
+);
 
-export const signupUser = createAsyncThunk<
-  AuthResponse,
-  SignupPayload
->('auth/signup', async ({ username, email, password }) => {
-  const res = await fetch(`${url}/signup`, {
-    method: 'POST',
-    headers: {
-      Accept: 'application/form-data',
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ username, email, password }),
-  });
-  return res.json();
-});
+export const signupUser = createAsyncThunk<AuthResponse, SignupPayload>(
+  'auth/signup',
+  async ({ username, email, password }) => {
+    const res = await fetch(`${url}/signup`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/form-data',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username, email, password }),
+    });
+    return res.json();
+  }
+);
 
 const authSlice = createSlice({
   name: 'auth',
@@ -60,9 +65,11 @@ const authSlice = createSlice({
   reducers: {
     logout(state) {
       state.token = null;
+      state.user = null;
       localStorage.removeItem('auth-token');
+      localStorage.removeItem('auth-user');
     },
-    setToken(state, action) {
+    setToken(state, action: PayloadAction<string | null>) {
       state.token = action.payload;
     },
   },
@@ -75,7 +82,11 @@ const authSlice = createSlice({
         state.loading = false;
         if (action.payload.success && action.payload.token) {
           state.token = action.payload.token;
+          state.user = action.payload.user || state.user;
           localStorage.setItem('auth-token', action.payload.token);
+          if (action.payload.user) {
+            localStorage.setItem('auth-user', JSON.stringify(action.payload.user));
+          }
         }
       })
       .addCase(loginUser.rejected, (state) => {
@@ -88,7 +99,11 @@ const authSlice = createSlice({
         state.loading = false;
         if (action.payload.success && action.payload.token) {
           state.token = action.payload.token;
+          state.user = action.payload.user || state.user;
           localStorage.setItem('auth-token', action.payload.token);
+          if (action.payload.user) {
+            localStorage.setItem('auth-user', JSON.stringify(action.payload.user));
+          }
         }
       })
       .addCase(signupUser.rejected, (state) => {
@@ -99,6 +114,7 @@ const authSlice = createSlice({
 
 export const { logout, setToken } = authSlice.actions;
 export const selectAuthToken = (state: { auth: AuthState }) => state.auth.token;
+export const selectAuthUser = (state: { auth: AuthState }) => state.auth.user;
 export const selectAuthLoading = (state: { auth: AuthState }) =>
   state.auth.loading;
 
