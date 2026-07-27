@@ -1,28 +1,39 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import Item from './Item';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { fetchNewCollections, selectNewCollections, selectProductsLoading, selectProductsError } from '../store/slices/productsSlice';
 
-interface ApiProduct {
-  id: number;
-  name: string;
-  image: string;
-  basePrice?: number;
-  salePrice?: number;
-  new_price?: number;
-  old_price?: number;
-  variants?: { colorHex: string }[];
-  tags?: string[];
-  images?: string[];
+interface NewCollectionsProps {
+  onError?: (error: string) => void;
 }
 
-function NewCollections() {
-  const [newCollection, setNewCollection] = useState<ApiProduct[]>([]);
+function NewCollections({ onError }: NewCollectionsProps = {}) {
+  const dispatch = useAppDispatch();
+  const newCollections = useAppSelector(selectNewCollections);
+  const loading = useAppSelector(selectProductsLoading);
+  const error = useAppSelector(selectProductsError);
 
   useEffect(() => {
-    fetch('http://localhost:4000/newcollections')
-      .then((response) => response.json())
-      .then((data) => setNewCollection(data));
-  }, []);
+    dispatch(fetchNewCollections());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (error && onError) {
+      onError(error);
+    }
+  }, [error, onError]);
+
+  if (loading) {
+    return (
+      <div className="px-4 md:px-16 lg:px-24 xl:px-32 mt-24">
+        <div className="text-center py-16">
+          <div className="w-12 h-12 mx-auto mb-4 rounded-full border-4 border-pink-500 border-t-transparent animate-spin"></div>
+          <p className="text-slate-400">Loading new collections...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="px-4 md:px-16 lg:px-24 xl:px-32 mt-24">
@@ -48,14 +59,14 @@ function NewCollections() {
           mass: 1,
         }}
       >
-        {newCollection.map((item) => (
+        {newCollections.map((item) => (
           <Item
             key={item.id}
             id={item.id}
             name={item.name}
             image={item.image || item.images?.[0] || ''}
-            basePrice={item.basePrice ?? item.new_price}
-            salePrice={item.salePrice ?? item.old_price}
+            basePrice={item.basePrice}
+            salePrice={item.salePrice}
             tags={item.tags}
             variants={item.variants}
           />
