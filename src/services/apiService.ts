@@ -1,4 +1,5 @@
 import { Product } from '../types';
+import type { AuthResponse } from '../types';
 
 const API_BASE_URL = 'http://localhost:4000';
 
@@ -66,6 +67,46 @@ export class ApiService {
       throw new Error(`Failed to calculate shipping: ${response.statusText}`);
     }
     return response.json();
+  }
+
+  // Authentication methods
+  static async login(credentials: { email: string; password: string }): Promise<AuthResponse> {
+    const response = await fetch(`${API_BASE_URL}/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(credentials),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.errors || 'Login failed');
+    }
+
+    return response.json();
+  }
+
+  static async signup(userData: { username: string; email: string; password: string }): Promise<AuthResponse> {
+    const response = await fetch(`${API_BASE_URL}/signup`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(userData),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.errors || 'Signup failed');
+    }
+
+    return response.json();
+  }
+
+  // For backward compatibility
+  static get url(): string {
+    return API_BASE_URL;
   }
 }
 
